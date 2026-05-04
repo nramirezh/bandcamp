@@ -11,128 +11,67 @@
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
 
     <style>
-        :root { 
-            --bc-blue: #1da0c3; 
-            --bc-dark: #121212; /* Negro profundo */
-            --card-bg: #1e1e1e; /* Gris muy oscuro para tarjetas */
-            --text-main: #e0e0e0; 
-        }
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bc-dark); 
-            background-image: linear-gradient(to bottom, rgba(18, 18, 18, 0.3), rgba(18, 18, 18, 1)), 
-                              url('https://f4.bcbits.com/img/0037783054_102.avif');
-            background-repeat: no-repeat;
-            background-position: top center;
-            background-size: contain;
-            color: var(--text-main); 
-            padding: 20px; 
-            margin: 0;
-        }
-        
+        :root { --bc-blue: #1da0c3; --bc-dark: #222; --bg-gray: #f4f7f6; }
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: var(--bg-gray); color: var(--bc-dark); padding: 20px; }
         .container { max-width: 1200px; margin: auto; }
-        
-        /* Contenedor principal para el Split (Tarjetas e Izquierda / Player Derecha) */
-        .main-layout {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin-top: 250px; /* Espacio para que se vea la imagen de fondo arriba */
-            align-items: flex-start;
-        }
-        
-        .stats-side { flex: 1; min-width: 300px; }
-        .player-side { width: 350px; position: sticky; top: 20px; }
-        
-        /* Estilo de Tarjetas Dark */
-        .grid-stats { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
-            gap: 15px; 
-        }
-        
-        .card { 
-            background: var(--card-bg); 
-            padding: 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            text-align: center; 
-            border: 1px solid #333;
-        }
-        
-        .card h3 { margin: 0; color: #888; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; }
-        .card p { font-size: 1.5rem; margin: 10px 0 0; font-weight: 800; color: var(--bc-blue); }
-        
-        .section { 
-            background: var(--card-bg); 
-            padding: 25px; 
-            border-radius: 15px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
-            margin-bottom: 30px; 
-            border: 1px solid #333;
-        }
-        
-        h1, h2 { color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); }
-        
-        /* Ajuste para la tabla en modo oscuro */
-        table.dataTable { color: white !important; }
-        .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, 
-        .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, 
-        .dataTables_wrapper .dataTables_paginate { color: #888 !important; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        .card h3 { margin: 0; color: #888; font-size: 0.75rem; text-transform: uppercase; }
+        .card p { font-size: 1.8rem; margin: 8px 0 0; font-weight: 800; color: var(--bc-blue); }
+        .section { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        h2 { font-size: 1.2rem; margin-top: 0; border-left: 4px solid var(--bc-blue); padding-left: 12px; }
+        #comunidadesPieChart { max-height: 400px; margin: 0 auto; display: block; }
+        canvas { max-height: 300px; }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <div class="header" style="margin-bottom: 50px;">
-        <h1>Pumuky Bandcamp Dashboard</h1>
+    <div class="header">
+        <h1>No sueltes lo efímero Pumuky</h1>
+        <p>Pedidos en Pre-venta a través de Bandcamp</p>
     </div>
 
-    <!-- Layout de dos columnas -->
-    <div class="main-layout">
-        
-        <!-- Lado Izquierdo: Filtro y Estadísticas -->
-        <div class="stats-side">
-            <!-- Interruptor de Filtro -->
-            <div class="section" style="margin-bottom: 20px;">
-                <label style="display: flex; align-items: center; cursor: pointer;">
-                    <input type="checkbox" id="filtroCoste" style="margin-right: 15px; transform: scale(1.3);">
-                    <span style="font-weight: bold;">Ocultar ventas < 7€ (Coste fabricación)</span>
-                </label>
-            </div>
+    <div class="section" style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+        <label class="switch-container" style="display: flex; align-items: center; cursor: pointer; background: #eee; padding: 10px 20px; border-radius: 50px;">
+            <input type="checkbox" id="filtroCoste" style="margin-right: 10px; transform: scale(1.2);">
+            <span style="font-weight: bold; color: #444;">Ocultar ventas menores a 7€ (Coste de fabricación)</span>
+        </label>
+    </div>
 
-            <!-- Grid de Tarjetas -->
-            <div class="grid-stats">
-                <div class="card"><h3>Total Pedidos</h3><p id="stat-total">0</p></div>
-                <div class="card"><h3>Ingresos</h3><p id="stat-revenue">0 €</p></div>
-                <div class="card"><h3>Ticket Promedio</h3><p id="stat-avg">0 €</p></div>
-                <div class="card"><h3>Mediana</h3><p id="stat-median">0 €</p></div>
-                <div class="card"><h3>Moda</h3><p id="stat-mode">0 €</p></div>
-                <div class="card"><h3>Ciudad Top</h3><p id="stat-city">-</p></div>
-            </div>
-            
-            <div class="section" style="margin-top: 30px;">
-                <h2>Distribución de Precios</h2>
-                <canvas id="ventasChart"></canvas>
-            </div>
+    <div class="section" style="background: transparent; box-shadow: none; padding: 0; display: flex; justify-content: center;">
+        <div style="width: 350px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <iframe style="border: 0; width: 350px; height: 470px;" 
+                src="https://bandcamp.com/EmbeddedPlayer/album=2594272708/size=large/bgcol=ffffff/linkcol=1da0c3/tracklist=false/transparent=true/" 
+                seamless>
+                <a href="https://pumuky.bandcamp.com/album/no-sueltes-lo-ef-mero-2">No sueltes lo efímero de Pumuky</a>
+            </iframe>
         </div>
+    </div>
 
-        <!-- Lado Derecho: Reproductor Bandcamp -->
-        <div class="player-side">
-            <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.7);">
-                <iframe style="border: 0; width: 350px; height: 470px;" 
-                    src="https://bandcamp.com/EmbeddedPlayer/album=2594272708/size=large/bgcol=333333/linkcol=1da0c3/tracklist=false/transparent=true/" 
-                    seamless>
-                    <a href="https://pumuky.bandcamp.com/album/no-sueltes-lo-ef-mero-2">No sueltes lo efímero de Pumuky</a>
-                </iframe>
-            </div>
-        </div>
+    <div class="grid-stats">
+        <div class="card"><h3>Total Pedidos</h3><p id="stat-total">0</p></div>
+        <div class="card"><h3>Ingresos</h3><p id="stat-revenue">0 €</p></div>
+        <div class="card"><h3>Promedio</h3><p id="stat-avg">0 €</p></div>
+        <div class="card"><h3>Mediana</h3><p id="stat-median">0 €</p></div>
+        <div class="card"><h3>Moda</h3><p id="stat-mode">0 €</p></div>
+        <div class="card"><h3>Máximo</h3><p id="stat-max">0 €</p></div>
+    </div>
 
-    </div> <!-- Fin main-layout -->
+    <div class="section">
+        <h2>Distribución de Precios</h2>
+        <canvas id="ventasChart"></canvas>
+    </div>
 
-    <!-- Tabla abajo ocupando todo el ancho -->
-    <div class="section" style="margin-top: 30px;">
-        <h2>Detalle Maestro de Ventas</h2>
+    <div class="section">
+        <h2>Ventas por Comunidad Autónoma</h2>
+        <canvas id="comunidadesPieChart"></canvas>
+    </div>
+
+    <div class="section">
+        <h2>Listado Maestro de Ventas</h2>
         <table id="tablaVentas" class="display" style="width:100%">
             <thead>
                 <tr>
@@ -140,6 +79,7 @@
                     <th>Subtotal</th>
                     <th>Ciudad</th>
                     <th>CP</th>
+                    <th>Comunidad</th> <!-- CORREGIDO AQUÍ -->
                 </tr>
             </thead>
         </table>
