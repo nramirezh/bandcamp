@@ -14,23 +14,15 @@
         :root { --bc-blue: #1da0c3; --bc-dark: #222; --bg-gray: #f4f7f6; }
         body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: var(--bg-gray); color: var(--bc-dark); padding: 20px; }
         .container { max-width: 1200px; margin: auto; }
-        
         .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { color: var(--bc-dark); margin-bottom: 5px; }
-        
-        /* Stats Grid */
-        .grid-stats {display: grid;grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; transition: transform 0.2s; }
         .card:hover { transform: translateY(-5px); }
         .card h3 { margin: 0; color: #888; font-size: 0.75rem; text-transform: uppercase; }
         .card p { font-size: 1.8rem; margin: 8px 0 0; font-weight: 800; color: var(--bc-blue); }
-
-        #comunidadesPieChart {    max-height: 400px; margin: 0 auto;} /* Evita que el gráfico ocupe toda la pantalla */ 
-
-        /* Sections */
         .section { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px; }
         h2 { font-size: 1.2rem; margin-top: 0; border-left: 4px solid var(--bc-blue); padding-left: 12px; }
-        
+        #comunidadesPieChart { max-height: 400px; margin: 0 auto; display: block; }
         canvas { max-height: 300px; }
     </style>
 </head>
@@ -39,7 +31,7 @@
 <div class="container">
     <div class="header">
         <h1>No sueltes lo efímero Pumuky</h1>
-        <p>Pedidos en Pre-venta a traves de Bandcamp</p>
+        <p>Pedidos en Pre-venta a través de Bandcamp</p>
     </div>
 
     <div class="section" style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
@@ -50,14 +42,13 @@
     </div>
 
     <div class="grid-stats">
-    <div class="card"><h3>Total Pedidos</h3><p id="stat-total">0</p></div>
-    <div class="card"><h3>Ingresos</h3><p id="stat-revenue">0 €</p></div>
-    <div class="card"><h3>Ticket Promedio</h3><p id="stat-avg">0 €</p></div>
-    <div class="card"><h3>Mediana</h3><p id="stat-median">0 €</p></div>
-    <div class="card"><h3>Moda (Más repetido)</h3><p id="stat-mode">0 €</p></div>
-    <div class="card"><h3>Máximo</h3><p id="stat-max">0 €</p></div>
+        <div class="card"><h3>Total Pedidos</h3><p id="stat-total">0</p></div>
+        <div class="card"><h3>Ingresos</h3><p id="stat-revenue">0 €</p></div>
+        <div class="card"><h3>Ticket Promedio</h3><p id="stat-avg">0 €</p></div>
+        <div class="card"><h3>Mediana</h3><p id="stat-median">0 €</p></div>
+        <div class="card"><h3>Moda</h3><p id="stat-mode">0 €</p></div>
+        <div class="card"><h3>Máximo</h3><p id="stat-max">0 €</p></div>
     </div>
-    
 
     <div class="section">
         <h2>Distribución de Precios</h2>
@@ -78,7 +69,7 @@
                     <th>Subtotal</th>
                     <th>Ciudad</th>
                     <th>CP</th>
-                    <th>Comunidad</th
+                    <th>Comunidad</th> <!-- CORREGIDO AQUÍ -->
                 </tr>
             </thead>
         </table>
@@ -90,28 +81,53 @@
 <script>
     let miGrafico; 
     let pieChart;
-    
+
+    // FUNCIÓN DE ESTADÍSTICAS (Necesaria para que no falle)
+    function updateStats(items) {
+        if (items.length === 0) {
+            document.querySelectorAll('.card p').forEach(p => p.innerText = "0");
+            return;
+        }
+        const values = items.map(i => i.subtotal).sort((a, b) => a - b);
+        const totalSum = values.reduce((a, b) => a + b, 0);
+        
+        document.getElementById('stat-total').innerText = items.length;
+        document.getElementById('stat-revenue').innerText = totalSum.toFixed(2) + ' €';
+        document.getElementById('stat-avg').innerText = (totalSum / items.length).toFixed(2) + ' €';
+        document.getElementById('stat-max').innerText = Math.max(...values).toFixed(2) + ' €';
+
+        // Mediana
+        const mid = Math.floor(values.length / 2);
+        const median = values.length % 2 !== 0 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
+        document.getElementById('stat-median').innerText = median.toFixed(2) + ' €';
+
+        // Moda
+        const mapping = {};
+        let maxFreq = 0;
+        let mode = values[0];
+        values.forEach(v => {
+            mapping[v] = (mapping[v] || 0) + 1;
+            if (mapping[v] > maxFreq) { maxFreq = mapping[v]; mode = v; }
+        });
+        document.getElementById('stat-mode').innerText = mode.toFixed(2) + ' €';
+    }
+
     function renderDashboard() {
         const aplicarFiltro = document.getElementById('filtroCoste').checked;
-        
-        // Filtrar los datos: si el checkbox está marcado, solo pasan los >= 7
         const datosFiltrados = aplicarFiltro 
             ? datosBandcamp.filter(item => item.subtotal >= 7)
             : datosBandcamp;
-    
-        // 1. Actualizar Tarjetas (Totales, Mediana, Moda, etc.)
+
         updateStats(datosFiltrados);
-    
-        // 2. Actualizar Tabla (Asegúrate de que el HTML tenga los 5 <th>)
+
         const table = $('#tablaVentas').DataTable();
         table.clear();
         table.rows.add(datosFiltrados);
         table.draw();
-    
-        // 3. Actualizar Gráfico de Barras (Rangos de precio)
+
+        // Gráfico de Barras
         if (miGrafico) miGrafico.destroy(); 
         const ctxBar = document.getElementById('ventasChart').getContext('2d');
-        
         miGrafico = new Chart(ctxBar, {
             type: 'bar',
             data: {
@@ -125,12 +141,10 @@
             },
             options: { responsive: true }
         });
-    
-        // 4. Actualizar Gráfico Circular (Comunidades)
+
         renderPieChart(datosFiltrados);
     }
-    
-    // Función para contar pedidos por rangos de precio
+
     function getRangeData(items, filtrado) {
         let counts = filtrado ? [0, 0, 0, 0, 0] : [0, 0, 0, 0, 0, 0];
         items.forEach(item => {
@@ -152,17 +166,13 @@
         });
         return counts;
     }
-    
-    // Función para el gráfico circular de Comunidades Autónomas
+
     function renderPieChart(data) {
         if (pieChart) pieChart.destroy();
-    
         const counts = {};
         data.forEach(item => {
-            // Usamos la nueva propiedad 'comunidad' del fichero datos.js
             counts[item.comunidad] = (counts[item.comunidad] || 0) + 1;
         });
-    
         const ctxPie = document.getElementById('comunidadesPieChart').getContext('2d');
         pieChart = new Chart(ctxPie, {
             type: 'pie',
@@ -170,39 +180,30 @@
                 labels: Object.keys(counts),
                 datasets: [{
                     data: Object.values(counts),
-                    backgroundColor: [
-                        '#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#4bc0c0', 
-                        '#f77825', '#9966ff', '#4caf50', '#ff9f40', '#00bcd4'
-                    ]
+                    backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#4bc0c0', '#f77825', '#9966ff', '#4caf50', '#ff9f40', '#00bcd4']
                 }]
             },
             options: {
                 responsive: true,
-                plugins: {
-                    legend: { position: 'right' }
-                }
+                plugins: { legend: { position: 'right' } }
             }
         });
     }
-    
-    // Inicialización de la página
+
     $(document).ready(function() {
-        // Primero inicializamos la tabla vacía con sus columnas
         $('#tablaVentas').DataTable({
             columns: [
                 { data: 'fecha' },
                 { data: 'subtotal', render: $.fn.dataTable.render.number('.', ',', 2, '', ' €') },
                 { data: 'ciudad' },
                 { data: 'cp' },
-                { data: 'comunidad' } // Quinta columna para la Comunidad
+                { data: 'comunidad' }
             ],
             language: { url: "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json" }
         });
-    
-        // Renderizamos el dashboard con los datos iniciales
+
         renderDashboard();
-    
-        // Evento para el filtro de coste de fabricación
+
         $('#filtroCoste').on('change', function() {
             renderDashboard();
         });
