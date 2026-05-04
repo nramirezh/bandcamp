@@ -3,75 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Ventas - Bandcamp</title>
+    <title>Dashboard Dinámico - Bandcamp</title>
+    
+    <!-- Librerías: Chart.js para gráficos y DataTables para la tabla -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; }
-        h1 { text-align: center; color: #333; }
-        
-        /* Tarjetas de métricas */
-        .stats-container { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 30px; }
-        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); flex: 1; text-align: center; }
-        .card h3 { margin: 0; color: #777; font-size: 0.9em; text-transform: uppercase; }
-        .card p { font-size: 1.8em; font-weight: bold; margin: 10px 0 0; color: #2c3e50; }
-        .card.highlight { border-top: 5px solid #3a86ff; }
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
 
-        /* Contenedor del gráfico */
-        .chart-container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; color: #1a1a1a; padding: 30px; }
+        .container { max-width: 1100px; margin: auto; }
+        .header { text-align: center; margin-bottom: 40px; }
+        
+        /* Estilo de Tarjetas */
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; border-bottom: 4px solid #3a86ff; }
+        .card h3 { margin: 0; color: #666; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+        .card p { font-size: 2rem; margin: 10px 0 0; font-weight: 700; color: #333; }
+
+        /* Secciones */
+        .section { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 40px; }
+        h2 { border-left: 5px solid #3a86ff; padding-left: 15px; margin-bottom: 25px; font-size: 1.4rem; }
+        
+        table.dataTable { border-collapse: collapse !important; border-radius: 8px; overflow: hidden; }
+        .dataTables_wrapper .dataTables_filter input { padding: 8px; border-radius: 5px; border: 1px solid #ddd; margin-left: 10px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Análisis de Ventas Bandcamp</h1>
+    <div class="header">
+        <h1>Dashboard de Ventas Bandcamp</h1>
+        <p>Análisis interactivo de pedidos y distribución geográfica</p>
+    </div>
 
-    <div class="stats-container">
-        <div class="card highlight">
+    <!-- Indicadores Clave -->
+    <div class="grid-stats">
+        <div class="card">
+            <h3>Pedidos Totales</h3>
+            <p>168</p>
+        </div>
+        <div class="card">
             <h3>Promedio</h3>
             <p>16,16 €</p>
         </div>
-        <div class="card highlight">
+        <div class="card">
             <h3>Mediana</h3>
             <p>15,00 €</p>
         </div>
-        <div class="card highlight">
-            <h3>Moda</h3>
-            <p>20,00 €</p>
+        <div class="card">
+            <h3>Máximo</h3>
+            <p>42,00 €</p>
         </div>
     </div>
 
-    <div class="chart-container">
-        <canvas id="ventasChart"></canvas>
+    <!-- Gráfico -->
+    <div class="section">
+        <h2>Distribución por Rango de Precio</h2>
+        <canvas id="ventasChart" height="100"></canvas>
+    </div>
+
+    <!-- Tabla con Buscador -->
+    <div class="section">
+        <h2>Detalle de Pedidos por Ciudad</h2>
+        <table id="tablaVentas" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Subtotal (€)</th>
+                    <th>Ciudad</th>
+                    <th>Código Postal</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Ejemplo de filas basadas en tus datos -->
+                <tr><td>01/05/2026</td><td>0.50</td><td>Madrid</td><td>28024</td></tr>
+                <tr><td>01/05/2026</td><td>15.00</td><td>Barcelona</td><td>08008</td></tr>
+                <tr><td>01/05/2026</td><td>20.00</td><td>Sevilla</td><td>41002</td></tr>
+                <tr><td>01/05/2026</td><td>10.00</td><td>Valencia</td><td>46005</td></tr>
+                <tr><td>02/05/2026</td><td>30.00</td><td>Bogotá</td><td>110221</td></tr>
+                <tr><td>01/05/2026</td><td>42.00</td><td>Ixmiquilpan</td><td>42302</td></tr>
+                <tr><td>01/05/2026</td><td>25.00</td><td>Málaga</td><td>29010</td></tr>
+            </tbody>
+        </table>
     </div>
 </div>
 
 <script>
+    // Configuración del Gráfico
     const ctx = document.getElementById('ventasChart').getContext('2d');
-    const ventasChart = new Chart(ctx, {
+    new Chart(ctx, {
         type: 'bar',
         data: {
             labels: ['0.5', '1-7', '7.01-9.99', '10-14.99', '15-19.99', '20-24.99', '25-29.99', '30+'],
             datasets: [{
-                label: 'Número de Artículos',
-                data: [6, 34, 3, 23, 38, 36, 17, 10], // Datos basados en tu archivo
-                backgroundColor: 'rgba(58, 134, 255, 0.7)',
-                borderColor: 'rgba(58, 134, 255, 1)',
-                borderWidth: 1,
-                borderRadius: 5
+                label: 'Pedidos',
+                data: [6, 34, 3, 23, 38, 36, 17, 10],
+                backgroundColor: '#3a86ff',
+                borderRadius: 6
             }]
         },
         options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false },
-                title: { display: true, text: 'Distribución de Pedidos por Rango de Precio' }
-            },
-            scales: {
-                y: { beginAtZero: true, grid: { color: '#eee' } },
-                x: { grid: { display: false } }
-            }
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
         }
+    });
+
+    // Inicializar Tabla Interactiva
+    $(document).ready( function () {
+        $('#tablaVentas').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
+            },
+            "pageLength": 10
+        });
     });
 </script>
 
