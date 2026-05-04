@@ -22,18 +22,24 @@
             font-family: 'Inter', 'Segoe UI', sans-serif; 
             background-color: var(--bc-dark); 
             /* Imagen de fondo con degradado para legibilidad */
-            background-image: linear-gradient(to bottom, rgba(18, 18, 18, 0.5), rgba(18, 18, 18, 1)), 
+            background-image: linear-gradient(to bottom, rgba(18, 18, 18, 0.4), rgba(18, 18, 18, 1)), 
                               url('https://f4.bcbits.com/img/0037783054_102.avif');
             background-repeat: no-repeat;
             background-position: top center;
-            background-size: cover;
-            color: var(--text-main); 
+            background-size: auto;
+            background-attachment: scroll;
+            color: #e0e0e0; 
             padding: 20px; 
             margin: 0;
         }
 
         .container { max-width: 1200px; margin: auto; }
-        .header { text-align: center; padding: 40px 0; }
+        .header { 
+            text-align: center; 
+            padding-top: 280px; /* Ajusta este número (en píxeles) para bajar el título más o menos */
+            padding-bottom: 50px; 
+}
+        /*.header { text-align: center; padding: 40px 0; }*/
         .header h1 { font-size: 2.5rem; margin: 0; color: white; text-shadow: 0 4px 10px rgba(0,0,0,0.8); }
 
         /* Layout de dos columnas para estadísticas y reproductor */
@@ -78,12 +84,66 @@
 
         h2 { font-size: 1.2rem; border-left: 4px solid var(--bc-blue); padding-left: 12px; margin-bottom: 20px; color: white; }
 
-        /* Ajustes Dark para DataTables */
+        /* Mejora de legibilidad para la Tabla Maestro */
+        .dataTables_wrapper { 
+            color: #bbb !important; 
+            margin-top: 20px;
+        }
+        
+        table.dataTable { 
+            background-color: #1a1a1a !important; /* Fondo negro sólido para las filas */
+            border-collapse: collapse !important;
+            border: 1px solid #333 !important;
+        }
+        
+        table.dataTable thead th { 
+            background-color: #252525 !important; 
+            color: var(--bc-blue) !important; 
+            padding: 15px !important;
+            border-bottom: 2px solid var(--bc-blue) !important;
+        }
+        
+        table.dataTable tbody tr { 
+            background-color: #1e1e1e !important; 
+        }
+        
+        table.dataTable tbody tr:hover { 
+            background-color: #2a2a2a !important; /* Resalte al pasar el ratón */
+        }
+        
+        table.dataTable tbody td { 
+            padding: 12px !important;
+            border-bottom: 1px solid #333 !important;
+            color: #eee !important; /* Texto casi blanco para lectura fácil */
+        }
+        
+        /* Estilos para buscador y paginación */
+        .dataTables_wrapper .dataTables_filter input { 
+            background: #333 !important; 
+            color: white !important; 
+            border: 1px solid #444 !important; 
+            padding: 6px !important;
+            border-radius: 4px !important;
+        }
+        
+        .dataTables_wrapper .dataTables_info { color: #888 !important; padding-top: 15px; }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button { 
+            color: #888 !important; 
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current { 
+            background: var(--bc-blue) !important; 
+            color: white !important; 
+            border: none !important;
+        }
+
+        /* Ajustes Dark para DataTables 
         .dataTables_wrapper { color: #888 !important; }
         table.dataTable thead th { border-bottom: 1px solid #444 !important; color: white; }
         table.dataTable tbody td { border-bottom: 1px solid #222 !important; color: #bbb; }
         .dataTables_wrapper .dataTables_filter input { background: #333; border: 1px solid #444; color: white; border-radius: 5px; }
-        .dataTables_wrapper .dataTables_length select { background: #333; color: white; }
+        .dataTables_wrapper .dataTables_length select { background: #333; color: white; }*/
     </style>
 </head>
 <body>
