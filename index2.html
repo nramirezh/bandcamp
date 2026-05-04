@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Pumuky - Edición Premium</title>
+    
+    <!-- Librerías -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+
+    <style>
+        :root { 
+            --bc-blue: #1da0c3; 
+            --bc-dark: #121212; 
+            --card-bg: #1e1e1e; 
+            --text-main: #e0e0e0; 
+        }
+
+        body { 
+            font-family: 'Inter', 'Segoe UI', sans-serif; 
+            background-color: var(--bc-dark); 
+            /* Imagen a tamaño real centrada arriba */
+            background-image: linear-gradient(to bottom, rgba(18, 18, 18, 0.4), rgba(18, 18, 18, 1)), 
+                              url('https://f4.bcbits.com/img/0037783054_102.avif');
+            background-repeat: no-repeat;
+            background-position: top center;
+            background-size: auto; 
+            color: var(--text-main); 
+            padding: 20px; 
+            margin: 0;
+        }
+
+        .container { max-width: 1200px; margin: auto; }
+        
+        /* Cabecera con margen para no tapar la foto */
+        .header { text-align: center; padding-top: 250px; padding-bottom: 50px; }
+        .header h1 { font-size: 2.8rem; margin: 0; color: white; text-shadow: 0 4px 15px rgba(0,0,0,0.9); }
+
+        .main-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .stats-side { flex: 1; min-width: 350px; }
+        .player-side { width: 350px; position: sticky; top: 20px; }
+
+        .grid-stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+            gap: 15px; 
+            margin-bottom: 25px;
+        }
+
+        .card { 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            text-align: center; 
+            border: 1px solid #333;
+        }
+
+        .card h3 { margin: 0; color: #888; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+        .card p { font-size: 1.8rem; margin: 10px 0 0; font-weight: 800; color: var(--bc-blue); }
+
+        .section { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6); 
+            margin-bottom: 30px; 
+            border: 1px solid #333;
+        }
+
+        h2 { font-size: 1.3rem; border-left: 4px solid var(--bc-blue); padding-left: 15px; margin-bottom: 25px; color: white; }
+
+        /* Mejora visual de la Tabla */
+        .dataTables_wrapper { color: #aaa !important; font-size: 0.95rem; }
+        table.dataTable { border-collapse: collapse !important; width: 100% !important; background: #1a1a1a !important; }
+        table.dataTable thead th { background: #252525; color: white !important; border-bottom: 2px solid var(--bc-blue) !important; padding: 15px !important; }
+        table.dataTable tbody tr { background-color: #1e1e1e !important; }
+        table.dataTable tbody tr:hover { background-color: #2a2a2a !important; }
+        table.dataTable tbody td { border-bottom: 1px solid #333 !important; padding: 12px !important; color: #ddd !important; }
+        
+        .dataTables_wrapper .dataTables_filter input { background: #2a2a2a; color: white; border: 1px solid #444; border-radius: 4px; padding: 5px 10px; }
+        .dataTables_wrapper .dataTables_length select { background: #2a2a2a; color: white; border: 1px solid #444; }
+        .dataTables_wrapper .dataTables_paginate .paginate_button { color: #888 !important; }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: var(--bc-blue) !important; border: none !important; color: white !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>No sueltes lo efímero</h1>
+        <p style="color: var(--bc-blue); font-weight: bold; letter-spacing: 2px;">PANEL DE CONTROL DE VENTAS</p>
+    </div>
+
+    <div class="main-layout">
+        <div class="stats-side">
+            <!-- Filtro -->
+            <div class="section" style="border-left: 6px solid var(--bc-blue);">
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" id="filtroCoste" style="margin-right: 15px; transform: scale(1.4);">
+                    <span style="font-weight: bold; font-size: 1.1rem;">Filtrar productos rentables (≥ 7€)</span>
+                </label>
+            </div>
+
+            <!-- KPIs -->
+            <div class="grid-stats">
+                <div class="card"><h3>Total Pedidos</h3><p id="stat-total">0</p></div>
+                <div class="card"><h3>Ingresos</h3><p id="stat-revenue">0 €</p></div>
+                <div class="card"><h3>Promedio</h3><p id="stat-avg">0 €</p></div>
+                <div class="card"><h3>Mediana</h3><p id="stat-median">0 €</p></div>
+                <div class="card"><h3>Ticket Máx</h3><p id="stat-max">0 €</p></div>
+                <div class="card"><h3>Ciudad Top</h3><p id="stat-city">-</p></div>
+            </div>
+
+            <div class="section">
+                <h2>Distribución de Precios</h2>
+                <canvas id="ventasChart"></canvas>
+            </div>
+            
+            <div class="section">
+                <h2>Ventas por Comunidad Autónoma</h2>
+                <canvas id="comunidadesPieChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Reproductor lateral -->
+        <div class="player-side">
+            <div style="border-radius: 12px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.9); border: 1px solid #444;">
+                <iframe style="border: 0; width: 350px; height: 470px;" 
+                    src="https://bandcamp.com/EmbeddedPlayer/album=2594272708/size=large/bgcol=333333/linkcol=1da0c3/tracklist=false/transparent=true/" 
+                    seamless>
+                </iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="section">
+        <h2><i class="fas fa-list"></i> Listado Maestro de Ventas</h2>
+        <table id="tablaVentas" class="display nowrap">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Subtotal</th>
+                    <th>Ciudad</th>
+                    <th>CP</th>
+                    <th>Comunidad</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<script src="datos.js"></script>
+
+<script>
+    let miGrafico, pieChart;
+
+    function updateStats(items) {
+        if (items.length === 0) {
+            document.querySelectorAll('.card p').forEach(p => p.innerText = "0");
+            return;
+        }
+        const values = items.map(i => i.subtotal).sort((a, b) => a - b);
+        const totalSum = values.reduce((a, b) => a + b, 0);
+        
+        document.getElementById('stat-total').innerText = items.length;
+        document.getElementById('stat-revenue').innerText = totalSum.toFixed(2) + ' €';
+        document.getElementById('stat-avg').innerText = (totalSum / items.length).toFixed(2) + ' €';
+        document.getElementById('stat-max').innerText = Math.max(...values).toFixed(2) + ' €';
+
+        const mid = Math.floor(values.length / 2);
+        const median = values.length % 2 !== 0 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
+        document.getElementById('stat-median').innerText = median.toFixed(2) + ' €';
+
+        // Ciudad Top
+        const ciudades = items.map(i => i.ciudad.trim());
+        const conteo = {}; let topC = "-", maxC = 0;
+        ciudades.forEach(c => {
+            conteo[c] = (conteo[c] || 0) + 1;
+            if(conteo[c] > maxC) { maxC = conteo[c]; topC = c; }
+        });
+        document.getElementById('stat-city').innerText = topC;
+    }
+
+    function renderPieChart(data) {
+        if (pieChart) pieChart.destroy();
+        const counts = {};
+        data.forEach(item => {
+            const com = item.comunidad ? item.comunidad.trim() : "Desconocida";[cite: 1]
+            counts[com] = (counts[com] || 0) + 1;
+        });
+
+        pieChart = new Chart(document.getElementById('comunidadesPieChart').getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(counts),
+                datasets: [{
+                    data: Object.values(counts),
+                    backgroundColor: ['#1da0c3', '#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#4bc0c0', '#f77825', '#9966ff'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'right', labels: { color: '#aaa', font: { size: 12 } } } }
+            }
+        });
+    }
+
+    function renderDashboard() {
+        const aplicarFiltro = document.getElementById('filtroCoste').checked;
+        const datosFiltrados = aplicarFiltro 
+            ? datosBandcamp.filter(item => item.subtotal >= 7)
+            : datosBandcamp;
+
+        updateStats(datosFiltrados);
+        renderPieChart(datosFiltrados);
+
+        const table = $('#tablaVentas').DataTable();
+        table.clear().rows.add(datosFiltrados).draw();
+
+        if (miGrafico) miGrafico.destroy();
+        const rangeCounts = aplicarFiltro ? [0, 0, 0, 0, 0] : [0, 0, 0, 0, 0, 0];
+        datosFiltrados.forEach(item => {
+            const v = item.subtotal;
+            if (!aplicarFiltro) {
+                if (v < 7) rangeCounts[0]++; else if (v < 10) rangeCounts[1]++; else if (v < 15) rangeCounts[2]++;
+                else if (v < 20) rangeCounts[3]++; else if (v < 30) rangeCounts[4]++; else rangeCounts[5]++;
+            } else {
+                if (v < 10) rangeCounts[0]++; else if (v < 15) rangeCounts[1]++; else if (v < 20) rangeCounts[2]++;
+                else if (v < 30) rangeCounts[3]++; else rangeCounts[4]++;
+            }
+        });
+
+        miGrafico = new Chart(document.getElementById('ventasChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: aplicarFiltro ? ['7-10€', '10-15€', '15-20€', '20-30€', '30€+'] : ['<7€', '7-10€', '10-15€', '15-20€', '20-30€', '30€+'],
+                datasets: [{ data: rangeCounts, backgroundColor: '#1da0c3', borderRadius: 4 }]
+            },
+            options: { 
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { ticks: { color: '#888' }, grid: { color: '#333' } },
+                    x: { ticks: { color: '#888' }, grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        $('#tablaVentas').DataTable({
+            columns: [
+                { data: 'fecha' },
+                { data: 'subtotal', render: $.fn.dataTable.render.number('.', ',', 2, '', ' €') },[cite: 1]
+                { data: 'ciudad' },
+                { data: 'cp' },
+                { data: 'comunidad', defaultContent: "N/A" }[cite: 1]
+            ],
+            language: { url: "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json" },
+            order: [[0, 'desc']],
+            pageLength: 10
+        });
+
+        renderDashboard();
+        $('#filtroCoste').on('change', renderDashboard);
+    });
+</script>
+</body>
+</html>
