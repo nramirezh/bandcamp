@@ -19,7 +19,13 @@
         .header h1 { color: var(--bc-dark); margin-bottom: 5px; }
         
         /* Stats Grid */
-        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .grid-stats { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+    gap: 15px; 
+    margin-bottom: 30px; 
+        }
+        
         .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; transition: transform 0.2s; }
         .card:hover { transform: translateY(-5px); }
         .card h3 { margin: 0; color: #888; font-size: 0.75rem; text-transform: uppercase; }
@@ -77,16 +83,45 @@
     const data = (typeof datosBandcamp !== 'undefined') ? datosBandcamp : [];
 
     // 2. Cálculo de estadísticas para los Cards
+
     function updateStats(items) {
-        if (items.length === 0) return;
-        const subtotals = items.map(i => i.subtotal);
-        const totalSum = subtotals.reduce((a, b) => a + b, 0);
-        
-        document.getElementById('stat-total').innerText = items.length;
-        document.getElementById('stat-revenue').innerText = totalSum.toLocaleString() + ' €';
-        document.getElementById('stat-avg').innerText = (totalSum / items.length).toFixed(2) + ' €';
-        document.getElementById('stat-max').innerText = Math.max(...subtotals).toFixed(2) + ' €';
+    if (items.length === 0) return;
+    
+    // Extraer y ordenar subtotales para cálculos estadísticos
+    const values = items.map(i => i.subtotal).sort((a, b) => a - b);
+    const totalSum = values.reduce((a, b) => a + b, 0);
+    
+    // 1. Cálculos Básicos
+    document.getElementById('stat-total').innerText = items.length;
+    document.getElementById('stat-revenue').innerText = totalSum.toLocaleString() + ' €';
+    document.getElementById('stat-avg').innerText = (totalSum / items.length).toFixed(2) + ' €';
+    document.getElementById('stat-max').innerText = Math.max(...values).toFixed(2) + ' €';
+
+    // 2. Cálculo de la Mediana
+    let median;
+    const mid = Math.floor(values.length / 2);
+    if (values.length % 2 === 0) {
+        median = (values[mid - 1] + values[mid]) / 2;
+    } else {
+        median = values[mid];
     }
+    document.getElementById('stat-median').innerText = median.toFixed(2) + ' €';
+
+    // 3. Cálculo de la Moda (el valor que más se repite)
+    const mapping = {};
+    let maxFreq = 0;
+    let mode = values[0];
+    
+    values.forEach(v => {
+        mapping[v] = (mapping[v] || 0) + 1;
+        if (mapping[v] > maxFreq) {
+            maxFreq = mapping[v];
+            mode = v;
+        }
+    });
+    document.getElementById('stat-mode').innerText = mode.toFixed(2) + ' €';
+    }
+    
 
     // 3. Procesamiento de rangos para Chart.js
     function getRangeData(items) {
